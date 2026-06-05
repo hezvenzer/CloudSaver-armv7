@@ -1,7 +1,7 @@
 FROM node:18-alpine
 
-# 安装 Nginx
-RUN apk add --no-cache nginx
+# 安装 Nginx 和编译工具（用于 sqlite3 原生模块编译）
+RUN apk add --no-cache nginx python3 make g++ gcc
 
 # 设置工作目录
 WORKDIR /app
@@ -15,11 +15,19 @@ COPY frontend/dist /usr/share/nginx/html
 # 复制 Nginx 配置文件
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# 复制后端代码并安装生产依赖
+# 复制后端代码
 COPY backend/ /app/
 
-# 安装生产环境依赖
-RUN npm install -g pnpm && pnpm install --production
+# 安装 pnpm 并在 ARMv7 上重新安装依赖（编译 sqlite3）
+RUN npm install -g pnpm && \
+    pnpm install --production && \
+    # 强制重新编译 sqlite3
+    cd node_modules/.pnpm/sqlite3@*/node_modules/sqlite3 && \
+    npx node-pre-gyp install --fallback-to-build --build-from-source || \
+    npm rebuild sqlite3 --build-from-source
+
+# 清理编译工具（减小镜像体积）
+RUN apk del python3 make g++ gcc
 
 # 设置数据卷
 VOLUME ["/app/config", "/app/data"]
