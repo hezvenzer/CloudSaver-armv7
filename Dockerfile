@@ -1,7 +1,7 @@
 # ============================================
-# 前端构建阶段（在构建机原生平台运行，不模拟 ARM）
+# 前端构建阶段（强制在构建机原生平台运行）
 # ============================================
-FROM node:18-alpine AS frontend-build
+FROM --platform=$BUILDPLATFORM node:18-alpine AS frontend-build
 WORKDIR /app
 
 RUN npm install -g pnpm
@@ -15,7 +15,7 @@ RUN npm run build
 # ============================================
 # 后端构建阶段（同样在原生平台）
 # ============================================
-FROM node:18-alpine AS backend-build
+FROM --platform=$BUILDPLATFORM node:18-alpine AS backend-build
 WORKDIR /app
 
 RUN npm install -g pnpm
@@ -28,9 +28,9 @@ RUN rm -f database.sqlite
 RUN npm run build
 
 # ============================================
-# 生产环境镜像（ARMv7 目标平台，只复制产物）
+# 生产环境镜像（ARMv7 目标平台）
 # ============================================
-FROM --platform=$TARGETPLATFORM node:18-alpine
+FROM node:18-alpine
 
 RUN apk add --no-cache nginx
 WORKDIR /app
