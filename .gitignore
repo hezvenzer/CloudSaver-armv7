@@ -1,4 +1,10 @@
-node_modules/
+# 忽略根目录的 node_modules，但不忽略子目录的
+/node_modules
+/frontend/node_modules
+
+# 保留 backend 的 node_modules（包含运行时依赖）
+!backend/node_modules
+
 logs/
 dist/
 .env
@@ -21,4 +27,4 @@ config.private.ts
 *.key
 
 .DS_Store
-*.log 
+*.log
