@@ -23,6 +23,26 @@ jobs:
           LOWER_NAME=$(echo "$REPO_NAME" | tr '[:upper:]' '[:lower:]')
           echo "LOWER_NAME=$LOWER_NAME" >> $GITHUB_ENV
 
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: 构建前端
+        run: |
+          cd frontend
+          npm install -g pnpm
+          pnpm install
+          npm run build
+
+      - name: 构建后端
+        run: |
+          cd backend
+          npm install -g pnpm
+          pnpm install
+          rm -f database.sqlite
+          npm run build
+
       - name: 登录到 GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -46,6 +66,3 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ env.LOWER_NAME }}:test
-          # 关键：传递 BUILDPLATFORM 让构建阶段在 x86 运行
-          build-args: |
-            BUILDPLATFORM=linux/amd64
