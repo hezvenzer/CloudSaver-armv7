@@ -45,4 +45,7 @@ jobs:
           platforms: linux/arm/v7
           push: true
           tags: |
-            ghcr.io/${{ env.LOWER_NAME }}:${{ env.IMAGE_NAME }}-test
+            ghcr.io/${{ env.LOWER_NAME }}:test
+          # 关键：传递 BUILDPLATFORM 让构建阶段在 x86 运行
+          build-args: |
+            BUILDPLATFORM=linux/amd64
